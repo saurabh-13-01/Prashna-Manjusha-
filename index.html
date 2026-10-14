@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>डॉ. ए. पी. जे. अब्दुल कलाम प्रश्नमंजुषा | प्रमाणपत्र</title>
+  
+  <!-- jsPDF for direct PDF download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #0f3460;
+      --primary-dark: #16213e;
+      --accent: #d97706;
+      --bg: #f1f5f9;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --correct: #16a34a;
+      --wrong: #dc2626;
+      --border: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1.25rem;
+    }
+
+    .quiz-container {
+      background: var(--card-bg);
+      max-width: 680px;
+      width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .quiz-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+    }
+
+    .quiz-header h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .quiz-header p {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .step-section {
+      padding: 1.75rem 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--primary);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    .btn-action {
+      display: inline-block;
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.85rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover {
+      background: var(--primary-dark);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.3s ease;
+    }
+
+    .question-count {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .question-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .option-btn {
+      background: #f8fafc;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .option-btn.selected-correct {
+      border-color: var(--correct);
+      background-color: #dcfce7;
+      color: #14532d;
+      font-weight: 600;
+    }
+
+    .option-btn.selected-wrong {
+      border-color: var(--wrong);
+      background-color: #fee2e2;
+      color: #7f1d1d;
+      font-weight: 600;
+    }
+
+    .feedback-box {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    .feedback-box.correct {
+      display: block;
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .feedback-box.wrong {
+      display: block;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .quiz-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1.25rem;
+    }
+
+    .next-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+    }
+
+    .result-container {
+      display: none;
+      text-align: center;
+    }
+
+    .score-badge {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 0.75rem 0;
+    }
+
+    .cert-preview-card {
+      margin: 1.5rem 0 1rem;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 0.5rem;
+      background: #fafafa;
+    }
+
+    #certCanvas {
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: block;
+    }
+
+    /* Live Adjuster Panel */
+    .adjuster-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    .adjuster-box summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .adjuster-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-top: 0.75rem;
+    }
+
+    .adjuster-grid label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .adjuster-grid input[type="range"] {
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+
+    .download-btns {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-download-pdf {
+      flex: 1;
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-download-png {
+      flex: 1;
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .fallback-upload {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      display: none;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="quiz-container">
+    <div class="quiz-header">
+      <h1>डॉ. ए. पी. जे. अब्दुल कलाम प्रश्नमंजुषा</h1>
+      <p>वाचन प्रेरणा दिन विशेष | डिजिटल प्रमाणपत्र</p>
+    </div>
+
+    <!-- Step 1: Registration -->
+    <div id="step-register" class="step-section">
+      <div class="form-group">
+        <label for="studentName">विद्यार्थ्याचे / उमेदवाराचे नाव:</label>
+        <input type="text" id="studentName" placeholder="उदा. Samyak Shankar Sonkamble" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="studentClass">इयत्ता (Class):</label>
+          <input type="text" id="studentClass" placeholder="उदा. १२ वी / 12th" required />
+        </div>
+        <div class="form-group">
+          <label for="studentDiv">तुकडी (Div):</label>
+          <input type="text" id="studentDiv" placeholder="उदा. अ / A" required />
+        </div>
+      </div>
+
+      <button class="btn-action" onclick="startQuiz()">प्रश्नमंजुषा सुरू करा →</button>
+    </div>
+
+    <!-- Step 2: Quiz Engine -->
+    <div id="step-quiz" class="step-section" style="display: none;">
+      <div class="progress-bar-container">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+      <div id="question-count" class="question-count">प्रश्न १ / १०</div>
+      <div id="question-title" class="question-title">लोड होत आहे...</div>
+      <div id="options-grid" class="options-grid"></div>
+      <div id="feedback-box" class="feedback-box"></div>
+      
+      <div class="quiz-footer">
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">पुढील प्रश्न →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Result & Certificate -->
+    <div id="step-result" class="step-section result-container">
+      <h2>अभिनंदन! प्रश्नमंजुषा पूर्ण झाली.</h2>
+      <div id="score-display" class="score-badge">१० / १०</div>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">तुमच्या नावे प्रमाणपत्र तयार करण्यात आले आहे:</p>
+      
+      <div class="cert-preview-card">
+        <canvas id="certCanvas"></canvas>
+      </div>
+
+      <!-- Fine-tune Sliders for perfect control -->
+      <details class="adjuster-box">
+        <summary>⚙️ अक्षरांची जागा बदला (Fine-tune Position Sliders)</summary>
+        <div class="adjuster-grid">
+          <label>नाव उंची (Y):
+            <input type="range" id="adjNameY" min="550" max="620" value="593" oninput="updatePositions()" />
+          </label>
+          <label>नाव आडवे (X):
+            <input type="range" id="adjNameX" min="400" max="550" value="477" oninput="updatePositions()" />
+          </label>
+          <label>इयत्ता आडवे (X):
+            <input type="range" id="adjClassX" min="730" max="820" value="783" oninput="updatePositions()" />
+          </label>
+          <label>तुकडी आडवे (X):
+            <input type="range" id="adjDivX" min="860" max="940" value="907" oninput="updatePositions()" />
+          </label>
+          <label>गुण उंची (Y):
+            <input type="range" id="adjScoreY" min="680" max="760" value="730" oninput="updatePositions()" />
+          </label>
+          <label>गुण आडवे (X):
+            <input type="range" id="adjScoreX" min="380" max="500" value="440" oninput="updatePositions()" />
+          </label>
+        </div>
+      </details>
+
+      <div id="fallbackUpload" class="fallback-upload">
+        <p>प्रमाणपत्र इमेज सापडली नाही. कृपया कॉम्प्युटरवरील इमेज निवडा:</p>
+        <input type="file" id="manualImageInput" accept="image/*" onchange="loadManualImage(event)" />
+      </div>
+
+      <div class="download-btns">
+        <button class="btn-download-pdf" onclick="downloadPDF()">📄 Download PDF</button>
+        <a id="btnPng" class="btn-download-png" download="Certificate.png">🖼 Download Image</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CERTIFICATE_IMAGE_SRC = "certificate.png";
+
+    const quizData = [
+      {
+        question: "डॉ. ए.पी.जे. अब्दुल कलाम यांचा जन्म कोणत्या राज्यात झाला?",
+        options: ["केरळ", "तामिळनाडू", "कर्नाटक", "आंध्र प्रदेश"],
+        correct: 1
+      },
+      {
+        question: "डॉ. कलाम यांचा जन्मदिन कोणता?",
+        options: ["१५ ऑक्टोबर १९३१", "२६ जानेवारी १९३०", "१५ ऑगस्ट १९३२", "२ ऑक्टोबर १९३१"],
+        correct: 0
+      },
+      {
+        question: "डॉ. ए.पी.जे. अब्दुल कलाम यांना कोणत्या नावाने ओळखले जाते?",
+        options: ["मिसाइल मॅन ऑफ इंडिया", "आयर्न मॅन ऑफ इंडिया", "मॅन ऑफ पीस", "रॉकेट किंग"],
+        correct: 0
+      },
+      {
+        question: "डॉ. कलाम भारताचे कितवे राष्ट्रपती होते?",
+        options: ["१० वे", "११ वे", "१२ वे", "१३ वे"],
+        correct: 1
+      },
+      {
+        question: "डॉ. कलाम यांनी भारताचे राष्ट्रपती म्हणून कोणत्या कालावधीत काम केले?",
+        options: ["१९९७–२००२", "२००२–२००७", "२००७–२०१२", "२०००–२००५"],
+        correct: 1
+      },
+      {
+        question: "डॉ. कलाम यांना भारतरत्न हा सर्वोच्च नागरी सन्मान कोणत्या वर्षी मिळाला?",
+        options: ["१९८७", "१९९०", "१९९७", "२००२"],
+        correct: 2
+      },
+      {
+        question: "डॉ. कलाम यांचे आत्मचरित्र कोणते?",
+        options: ["विंग्स ऑफ फायर", "इंडिया २०२०", "माय जर्नी", "इग्नाइटेड माइंड्स"],
+        correct: 0
+      },
+      {
+        question: "डॉ. कलाम यांचे निधन कोणत्या वर्षी झाले?",
+        options: ["२०१३", "२०१४", "२०१५", "२०१६"],
+        correct: 2
+      },
+      {
+        question: "डॉ. कलाम यांचा प्रमुख संबंध कोणत्या क्षेत्राशी होता?",
+        options: ["अंतराळ व क्षेपणास्त्र तंत्रज्ञान", "कृषी", "साहित्य", "क्रीडा"],
+        correct: 0
+      },
+      {
+        question: "डॉ. कलाम यांचा जन्मदिवस भारतात कोणता दिवस म्हणून साजरा केला जातो?",
+        options: ["विज्ञान दिवस", "विद्यार्थी दिवस", "वाचन प्रेरणा दिवस", "शिक्षक दिवस"],
+        correct: 2
+      }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    let answered = false;
+    let studentData = { name: "", standard: "", division: "" };
+    let loadedImageObj = null;
+
+    // Configurable Calibration Coordinates
+    let coords = {
+      nameX: 0.477,
+      nameY: 0.593,
+      classX: 0.783,
+      divX: 0.907,
+      scoreX: 0.440,
+      scoreY: 0.730
+    };
+
+    function startQuiz() {
+      const nameInput = document.getElementById("studentName").value.trim();
+      const classInput = document.getElementById("studentClass").value.trim();
+      const divInput = document.getElementById("studentDiv").value.trim();
+
+      if (!nameInput) {
+        alert("कृपया विद्यार्थ्याचे नाव प्रविष्ट करा.");
+        return;
+      }
+
+      studentData.name = nameInput;
+      studentData.standard = classInput || "";
+      studentData.division = divInput || "";
+
+      document.getElementById("step-register").style.display = "none";
+      document.getElementById("step-quiz").style.display = "block";
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      answered = false;
+      const feedbackBox = document.getElementById("feedback-box");
+      const nextBtn = document.getElementById("next-btn");
+      
+      feedbackBox.style.display = "none";
+      nextBtn.style.display = "none";
+
+      const currentQ = quizData[currentIdx];
+      document.getElementById("question-count").innerText = `प्रश्न ${currentIdx + 1} / ${quizData.length}`;
+      document.getElementById("question-title").innerText = currentQ.question;
+      document.getElementById("progress-fill").style.width = `${((currentIdx) / quizData.length) * 100}%`;
+
+      const optionsGrid = document.getElementById("options-grid");
+      optionsGrid.innerHTML = "";
+      const labels = ["A", "B", "C", "D"];
+
+      currentQ.options.forEach((optText, index) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerText = `${labels[index]}) ${optText}`;
+        btn.onclick = () => selectOption(index);
+        optionsGrid.appendChild(btn);
+      });
+    }
+
+    function selectOption(selectedIdx) {
+      if (answered) return;
+      answered = true;
+
+      const currentQ = quizData[currentIdx];
+      const buttons = document.querySelectorAll(".option-btn");
+      const feedbackBox = document.getElementById("feedback-box");
+      const nextBtn = document.getElementById("next-btn");
+
+      buttons.forEach(btn => btn.disabled = true);
+
+      if (selectedIdx === currentQ.correct) {
+        score++;
+        buttons[selectedIdx].classList.add("selected-correct");
+        feedbackBox.innerText = "✓ बरोबर उत्तर!";
+        feedbackBox.className = "feedback-box correct";
+      } else {
+        buttons[selectedIdx].classList.add("selected-wrong");
+        buttons[currentQ.correct].classList.add("selected-correct");
+        feedbackBox.innerText = `✗ चुकीचे उत्तर! योग्य उत्तर: ${currentQ.options[currentQ.correct]}`;
+        feedbackBox.className = "feedback-box wrong";
+      }
+
+      feedbackBox.style.display = "block";
+      nextBtn.style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+      currentIdx++;
+      if (currentIdx < quizData.length) {
+        loadQuestion();
+      } else {
+        finishQuiz();
+      }
+    }
+
+    function finishQuiz() {
+      document.getElementById("step-quiz").style.display = "none";
+      document.getElementById("step-result").style.display = "block";
+      document.getElementById("score-display").innerText = `${score} / ${quizData.length}`;
+      
+      initCertificateDraw();
+    }
+
+    function initCertificateDraw() {
+      const certImg = new Image();
+      certImg.src = CERTIFICATE_IMAGE_SRC;
+
+      certImg.onload = function () {
+        loadedImageObj = certImg;
+        document.getElementById("fallbackUpload").style.display = "none";
+        renderCertificateOnCanvas(loadedImageObj);
+      };
+
+      certImg.onerror = function () {
+        document.getElementById("fallbackUpload").style.display = "block";
+        const canvas = document.getElementById("certCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = 1000;
+        canvas.height = 684;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#dc2626";
+        ctx.font = "bold 20px 'Segoe UI', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("प्रमाणपत्र इमेज सापडली नाही. कृपया खालील बटणावरून इमेज निवडा.", 500, 340);
+      };
+    }
+
+    function loadManualImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          loadedImageObj = img;
+          document.getElementById("fallbackUpload").style.display = "none";
+          renderCertificateOnCanvas(loadedImageObj);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updatePositions() {
+      coords.nameY = parseInt(document.getElementById("adjNameY").value) / 1000;
+      coords.nameX = parseInt(document.getElementById("adjNameX").value) / 1000;
+      coords.classX = parseInt(document.getElementById("adjClassX").value) / 1000;
+      coords.divX = parseInt(document.getElementById("adjDivX").value) / 1000;
+      coords.scoreY = parseInt(document.getElementById("adjScoreY").value) / 1000;
+      coords.scoreX = parseInt(document.getElementById("adjScoreX").value) / 1000;
+
+      if (loadedImageObj) {
+        renderCertificateOnCanvas(loadedImageObj);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // ACCURATE CANVAS DRAWING (CALIBRATED FOR YOUR EXACT CERTIFICATE)
+    // -------------------------------------------------------------------------
+    function renderCertificateOnCanvas(img) {
+      const canvas = document.getElementById("certCanvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = img.naturalWidth || 1000;
+      canvas.height = img.naturalHeight || 684;
+
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // 1. Draw Template
+      ctx.drawImage(img, 0, 0, w, h);
+
+      ctx.fillStyle = "#0c2340";
+      ctx.textBaseline = "alphabetic";
+
+      // 2. CANDIDATE NAME (कुमार/कुमारी च्या समोरील रेषेवर)
+      const nameFontSize = Math.round(w * 0.026);
+      ctx.font = `bold ${nameFontSize}px 'Noto Sans Devanagari', 'Segoe UI', Tahoma, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(studentData.name, w * coords.nameX, h * coords.nameY);
+
+      // 3. इयत्ता (इयत्ता च्या समोरील रेषेवर)
+      const classFontSize = Math.round(w * 0.022);
+      ctx.font = `bold ${classFontSize}px 'Noto Sans Devanagari', 'Segoe UI', Tahoma, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(studentData.standard, w * coords.classX, h * coords.nameY);
+
+      // 4. तुकडी (तुकडी च्या समोरील रेषेवर)
+      ctx.fillText(studentData.division, w * coords.divX, h * coords.nameY);
+
+      // 5. गुण (स्पर्धेत _____ गुण घेऊन)
+      const scoreInlineSize = Math.round(w * 0.023);
+      ctx.font = `bold ${scoreInlineSize}px 'Noto Sans Devanagari', 'Segoe UI', Tahoma, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(`${score}/१०`, w * coords.scoreX, h * coords.scoreY);
+
+      // Bind PNG download
+      const btnPng = document.getElementById("btnPng");
+      btnPng.href = canvas.toDataURL("image/png");
+      btnPng.download = `${studentData.name.replace(/\s+/g, '_')}_Certificate.png`;
+    }
+
+    function downloadPDF() {
+      const canvas = document.getElementById("certCanvas");
+      if (!canvas.width || !loadedImageObj) {
+        alert("कृपया आधी प्रमाणपत्र लोड करा.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? "landscape" : "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height]
+      });
+
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save(`${studentData.name.replace(/\s+/g, '_')}_Certificate.pdf`);
+    }
+  </script>
+</body>
+</html>
